@@ -1,0 +1,41 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+
+pool: Agent_InfraPipeline
+
+jobs:
+- job: 
+  steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTask@5
+      displayName: init 
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'Infra_ServiceConnection'
+        backendAzureRmStorageAccountName: 'infrastorage1605'
+        backendAzureRmContainerName: 'infracontainer'
+        backendAzureRmKey: 'terraform.tfstate'
+    - task: TerraformTask@5
+      displayName: validate
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+    - task: TerraformTask@5
+      displayName: plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        environmentServiceNameAzureRM: 'Infra_ServiceConnection'
+    - task: TerraformTask@5
+      displayName: apply
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        environmentServiceNameAzureRM: 'Infra_ServiceConnection'
