@@ -1,0 +1,91 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+
+pool: Agent_InfraPipeline
+
+stages:
+  - stage: TerrafromInit
+    displayName: Terraform init
+    jobs:
+      - job: init
+        displayName: Terraform init
+        steps:
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'Infra_ServiceConnection'
+              backendAzureRmStorageAccountName: 'infrastorage1705'
+              backendAzureRmContainerName: 'infracontainer'
+              backendAzureRmKey: 'infra.tfstate'
+
+
+  - stage: TerraformPlan
+    displayName: Terraform fmt validate plan
+    jobs:
+      - job: plan
+        displayName: Terraform fmt validate plan
+        steps:
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'Infra_ServiceConnection'
+              backendAzureRmStorageAccountName: 'infrastorage1705'
+              backendAzureRmContainerName: 'infracontainer'
+              backendAzureRmKey: 'infra.tfstate'
+
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              environmentServiceNameAzureRM: 'Infra_ServiceConnection'
+
+
+
+  - stage: TerraformApply
+    displayName: Terraform Apply
+    jobs:
+      - job: TerraformApply
+        steps:
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'Infra_ServiceConnection'
+              backendAzureRmStorageAccountName: 'infrastorage1705'
+              backendAzureRmContainerName: 'infracontainer'
+              backendAzureRmKey: 'infra.tfstate'
+
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              commandOptions: '-auto-approve'
+              environmentServiceNameAzureRM: 'Infra_ServiceConnection'
+         
+              
+
+          
